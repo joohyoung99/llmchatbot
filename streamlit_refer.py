@@ -58,7 +58,7 @@ def main():
             st.markdown(query)
 
         with st.chat_message("assistant"):
-        chain = st.session_state.conversation
+            chain = st.session_state.conversation
 
         with st.spinner("Thinking..."):
             result = chain({"question": query})
