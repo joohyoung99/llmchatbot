@@ -45,9 +45,9 @@ def main():
             st.stop()
         files_text = get_text(uploaded_files)
         text_chunks = get_text_chunks(files_text)
-        vetorestore = get_vectorstore(text_chunks)
+        vectorestore = get_vectorstore(text_chunks)
      
-        st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key) 
+        st.session_state.conversation = get_conversation_chain(vectorestore,openai_api_key) 
 
         st.session_state.processComplete = True
 
@@ -77,11 +77,8 @@ def main():
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
                 source_documents = result['source_documents']
-
-                query = query  # 사용자가 입력한 질문
-                results_with_scores = vetorestore.similarity_search_with_relevance_scores(query, k=3)  # 유사도 검색
-                for result in results_with_scores:
-                    result.document.metadata['similarity'] = result.score  # 유사도 점수 저장
+                results_with_scores = vectorstore.similarity_search_with_relevance_scores(query, k=3)  # 유사도 검색
+                
 
                 st.markdown(response)
                 with st.expander("참고 문서 확인"):
@@ -143,12 +140,12 @@ def get_vectorstore(text_chunks):
     vectordb = FAISS.from_documents(text_chunks, embeddings)
     return vectordb
 
-def get_conversation_chain(vetorestore,openai_api_key):
+def get_conversation_chain(vectorestore,openai_api_key):
     llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
             chain_type="stuff", 
-            retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
+            retriever=vectorestore.as_retriever(search_type = 'mmr', vervose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
