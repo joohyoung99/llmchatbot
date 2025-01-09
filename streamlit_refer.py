@@ -29,9 +29,6 @@ def main():
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
-        
-    if "vectorstore" not in st.session_state:
-        st.session_state.vectorstore = None
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
@@ -49,10 +46,9 @@ def main():
             st.stop()
         files_text = get_text(uploaded_files)
         text_chunks = get_text_chunks(files_text)
-        vectorestore = get_vectorstore(text_chunks)
-       
-        st.session_state.vectorstore = vectorstore
-        st.session_state.conversation = get_conversation_chain(vectorestore,openai_api_key) 
+        vetorestore = get_vectorstore(text_chunks)
+     
+        st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key) 
 
         st.session_state.processComplete = True
 
@@ -82,15 +78,12 @@ def main():
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
                 source_documents = result['source_documents']
-                
-                results_with_scores = similarity_search_with_relevance_scores(st.session_state.vectorstore, query)
 
                 st.markdown(response)
                 with st.expander("참고 문서 확인"):
-                    for i, result in enumerate(results_with_scores):
-                        st.markdown(f"**Document {i+1}:** {result['document'].metadata.get('source', 'Unknown')}")
-                        st.markdown(f"**Similarity Score:** {result['score']:.4f}")
-                        st.markdown(result['document'].page_content)
+                    st.markdown(source_documents[0].metadata['source'], help = source_documents[0].page_content)
+                    st.markdown(source_documents[1].metadata['source'], help = source_documents[1].page_content)
+                    st.markdown(source_documents[2].metadata['source'], help = source_documents[2].page_content)
                     
 
 
@@ -127,7 +120,7 @@ def get_text(docs):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=900,
         chunk_overlap=100,
         length_function=tiktoken_len
     )
@@ -143,21 +136,13 @@ def get_vectorstore(text_chunks):
                                         )  
     vectordb = FAISS.from_documents(text_chunks, embeddings)
     return vectordb
-    
-def similarity_search_with_relevance_scores(vectorstore, query, k=3):
-    query_vector = vectorstore.embedding_function(query)
-    docs = vectorstore.similarity_search(query, k=k)
-    doc_vectors = [vectorstore._vectors[idx] for idx in vectorstore.index.search(query_vector, k)[1][0]]
-    scores = cosine_similarity([query_vector], doc_vectors)[0]
-    return [{"document": docs[i], "score": scores[i]} for i in range(len(docs))]
 
-
-def get_conversation_chain(vectorstore,openai_api_key):
+def get_conversation_chain(vetorestore,openai_api_key):
     llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
             chain_type="stuff", 
-            retriever=vectorstore.as_retriever(search_type = 'mmr', verbose = True), 
+            retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
@@ -170,3 +155,4 @@ def get_conversation_chain(vectorstore,openai_api_key):
 
 if __name__ == '__main__':
     main()
+  
