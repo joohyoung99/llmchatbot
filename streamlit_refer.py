@@ -29,7 +29,9 @@ def main():
         uploaded_files = st.file_uploader("Upload your file", type=['pdf', 'docx'], accept_multiple_files=True)
         openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
         process = st.button("Process")
+        
     vectorestore = None
+    
     if process:
         if not openai_api_key:
             st.info("Please add your OpenAI API key to continue.")
@@ -43,9 +45,14 @@ def main():
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [{"role": "assistant", "content": "안녕하세요! 주어진 문서에 대해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    if vectorestore is not None:
+        if 'messages' not in st.session_state:
+            st.session_state['messages'] = [{"role": "assistant", "content": "안녕하세요! 주어진 문서에 대해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
+
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
 
     history = StreamlitChatMessageHistory(key="chat_messages")
 
@@ -66,8 +73,10 @@ def main():
                 response = result['answer']
                 source_documents = result['source_documents'] 
 
-                # FAISS 유사도 검색
-                results_with_scores = similarity_search_with_relevance_scores(vectorestore, query, k=3)
+                if vectorestore is not None:
+                        # FAISS 유사도 검색
+                    results_with_scores = similarity_search_with_relevance_scores(vectorestore, query, k=3)
+                        
 
                 st.markdown(response)
                 with st.expander("참고 문서 확인"):
