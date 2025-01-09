@@ -30,9 +30,10 @@ def main():
         openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
         process = st.button("Process")
         
-    
+    # 벡터 저장소 변수 초기화
+    vectorestore = None
     results_with_scores = []
-    
+
     if process:
         if not openai_api_key:
             st.info("Please add your OpenAI API key to continue.")
@@ -40,23 +41,26 @@ def main():
         files_text = get_text(uploaded_files)
         text_chunks = get_text_chunks(files_text)
         vectorestore = get_vectorstore(text_chunks)
-        st.session_state.conversation = get_conversation_chain(vectorestore, openai_api_key) 
+        st.session_state.conversation = get_conversation_chain(vectorestore, openai_api_key)
         st.session_state.processComplete = True
 
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [{"role": "assistant", "content": "안녕하세요! 주어진 문서에 대해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
 
-   
-
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
 
     history = StreamlitChatMessageHistory(key="chat_messages")
 
     # Chat logic
     if query := st.chat_input("질문을 입력해주세요."):
+
+        # 벡터 저장소가 준비되지 않았을 경우 에러 처리
+        if vectorestore is None:
+            st.error("먼저 파일을 처리해야 합니다.")
+            st.stop()
+
         st.session_state.messages.append({"role": "user", "content": query})
 
         with st.chat_message("user"):
@@ -70,26 +74,27 @@ def main():
                 with get_openai_callback() as cb:
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
-                source_documents = result['source_documents'] 
+                source_documents = result['source_documents']
 
-             
+                # 유사도 점수 계산
                 results_with_scores = similarity_search_with_relevance_scores(vectorestore, query, k=3)
                 source_documents = []
                 for result in results_with_scores:
                     doc = result['document']
                     score = result['score']
                     doc.metadata['similarity_score'] = score  # 유사도 점수를 메타데이터에 추가
-                    source_documents.append(doc)        
+                    source_documents.append(doc)
 
                 st.markdown(response)
-                
+
                 with st.expander("참고 문서 확인"):
-                     num_documents = len(source_documents)
-                     for i in range(num_documents):
+                    num_documents = len(source_documents)
+                    for i in range(num_documents):
                         doc = source_documents[i]
                         st.markdown(f"**Document {i+1}:** {doc.metadata['source']}")
                         st.markdown(f"**Similarity Score:** {doc.metadata['similarity_score']:.4f}")
                         st.markdown(doc.page_content)
+
         # Add assistant message to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
 
