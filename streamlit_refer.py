@@ -68,11 +68,16 @@ def main():
                 source_documents = result['source_documents']
 
                 st.markdown(response)
+                results_with_scores = similarity_search_with_relevance_scores(vetorestore, query, k=3)
+
+                # 참고 문서 및 유사도 출력
                 with st.expander("참고 문서 확인"):
-                    st.markdown(source_documents[0].metadata['source'], help = source_documents[0].page_content)
-                    st.markdown(source_documents[1].metadata['source'], help = source_documents[1].page_content)
-                    st.markdown(source_documents[2].metadata['source'], help = source_documents[2].page_content)
-                    
+                  for i, doc_score in enumerate(results_with_scores):
+                    doc = doc_score["document"]
+                    score = doc_score["score"]
+                    st.markdown(f"**Document {i+1}:** {doc.metadata['source']}")
+                    st.markdown(f"**Similarity Score:** {score:.4f}")
+                    st.markdown(doc.page_content)
 
 
 # Add assistant message to chat history
@@ -125,12 +130,30 @@ def get_vectorstore(text_chunks):
     vectordb = FAISS.from_documents(text_chunks, embeddings)
     return vectordb
 
+def similarity_search_with_relevance_scores(vectorestore, query, k=3):
+    # 쿼리 벡터 추출
+    query_embedding = vectorestore.embedding_function(query)
+
+    # FAISS에서 가장 가까운 벡터 검색
+    distances, indices = vectorestore.index.search(query_embedding.reshape(1, -1), k)
+    
+    # 코사인 유사도 계산 (거리 -> 유사도로 변환)
+    scores = 1 / (1 + distances)  # 거리가 작을수록 유사도가 높음
+    
+    # 문서와 점수 묶음 반환
+    results_with_scores = []
+    for i in range(k):
+        doc = vectorestore.get_documents()[indices[0][i]]  # 검색된 문서 추출
+        results_with_scores.append({"document": doc, "score": scores[0][i]})
+    
+    return results_with_scores
+
 def get_conversation_chain(vetorestore,openai_api_key):
     llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
             chain_type="stuff", 
-            retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
+            retriever=vetorestore.as_retriever(search_type = 'mmr', verbose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
