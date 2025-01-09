@@ -30,7 +30,7 @@ def main():
         openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
         process = st.button("Process")
         
-    vectorestore = None
+    
     results_with_scores = []
     
     if process:
@@ -72,20 +72,24 @@ def main():
                 response = result['answer']
                 source_documents = result['source_documents'] 
 
-                if vectorestore is not None:
-                        # FAISS 유사도 검색
-                    results_with_scores = similarity_search_with_relevance_scores(vectorestore, query, k=3)
-                        
+             
+                results_with_scores = similarity_search_with_relevance_scores(vectorestore, query, k=3)
+                source_documents = []
+                for result in results_with_scores:
+                    doc = result['document']
+                    score = result['score']
+                    doc.metadata['similarity_score'] = score  # 유사도 점수를 메타데이터에 추가
+                    source_documents.append(doc)        
 
                 st.markdown(response)
                 
                 with st.expander("참고 문서 확인"):
-                     num_documents = min(len(source_documents), len(results_with_scores))  # 두 리스트 중 작은 길이 사용
+                     num_documents = len(source_documents)
                      for i in range(num_documents):
-                         st.markdown(f"**Document {i+1}:** {source_documents[i].metadata['source']}")
-                         st.markdown(f"**Similarity Score:** {results_with_scores[i]['score']:.4f}")
-                         st.markdown(source_documents[i].page_content)
-
+                        doc = source_documents[i]
+                        st.markdown(f"**Document {i+1}:** {doc.metadata['source']}")
+                        st.markdown(f"**Similarity Score:** {doc.metadata['similarity_score']:.4f}")
+                        st.markdown(doc.page_content)
         # Add assistant message to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
 
