@@ -24,7 +24,7 @@ def main():
     page_title="LLMChat",
     page_icon=":random:")
 
-    st.title("_ :red[LangBot]_ ")
+    st.title("RAG 기반 LangChain ChatBot")
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
