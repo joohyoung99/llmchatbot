@@ -46,6 +46,7 @@ def main():
         files_text = get_text(uploaded_files)
         text_chunks = get_text_chunks(files_text)
         vectorstore = get_vectorstore(text_chunks)
+       
      
         st.session_state.conversation = get_conversation_chain(vectorstore,openai_api_key) 
 
@@ -145,7 +146,7 @@ def get_conversation_chain(vectorstore,openai_api_key):
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
             chain_type="stuff", 
-            retriever=vectorstore.as_retriever(search_type = 'mmr', vervose = True), 
+            retriever=vectorstore.as_retriever(search_type = 'mmr', verbose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
