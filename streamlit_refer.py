@@ -58,27 +58,29 @@ def main():
             st.markdown(query)
 
         with st.chat_message("assistant"):
-            if 'vetorestore' in locals() or 'vetorestore' in globals():
-                chain = st.session_state.conversation
-                with st.spinner("Thinking..."):
-                    result = chain({"question": query})
-                    with get_openai_callback() as cb:
-                        st.session_state.chat_history = result['chat_history']
-                    response = result['answer']
-                    source_documents = result['source_documents']
+        chain = st.session_state.conversation
 
-                    st.markdown(response)
-                    results_with_scores = similarity_search_with_relevance_scores(vetorestore, query, k=3)
+        with st.spinner("Thinking..."):
+            result = chain({"question": query})
+            with get_openai_callback() as cb:
+                st.session_state.chat_history = result['chat_history']
+            response = result['answer']
+            source_documents = result['source_documents']
 
-                    with st.expander("참고 문서 확인"):
-                        for i, doc_score in enumerate(results_with_scores):
-                            doc = doc_score["document"]
-                            score = doc_score["score"]
-                            st.markdown(f"**Document {i+1}:** {doc.metadata['source']}")
-                            st.markdown(f"**Similarity Score:** {score:.4f}")
-                            st.markdown(doc.page_content)
-            else:
-                st.error("Please upload a document and click 'Process' first.")
+            st.markdown(response)
+
+            # 유사도 계산
+            results_with_scores = similarity_search_with_relevance_scores(vetorestore, query, k=3)
+
+            # 참고 문서 및 유사도 출력
+            with st.expander("참고 문서 확인"):
+                for i, doc_score in enumerate(results_with_scores):
+                    doc = doc_score["document"]
+                    score = doc_score["score"]
+                    st.markdown(f"**Document {i+1}:** {doc.metadata['source']}")
+                    st.markdown(f"**Similarity Score:** {score:.4f}")
+                    st.markdown(doc.page_content)
+       
 
 
 # Add assistant message to chat history
