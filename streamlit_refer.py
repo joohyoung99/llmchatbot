@@ -80,10 +80,11 @@ def main():
                 st.markdown(response)
                 
                 with st.expander("참고 문서 확인"):
-                    for i in range(3):  # 3개의 문서에 대해 반복
-                       st.markdown(f"**Document {i+1}:** {source_documents[i].metadata['source']}")
-                       st.markdown(f"**Similarity Score:** {results_with_scores[i]['score']:.4f}")
-                       st.markdown(source_documents[i].page_content)
+                     num_documents = min(len(source_documents), len(results_with_scores))  # 두 리스트 중 작은 길이 사용
+                     for i in range(num_documents):
+                         st.markdown(f"**Document {i+1}:** {source_documents[i].metadata['source']}")
+                         st.markdown(f"**Similarity Score:** {results_with_scores[i]['score']:.4f}")
+                         st.markdown(source_documents[i].page_content)
 
         # Add assistant message to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
