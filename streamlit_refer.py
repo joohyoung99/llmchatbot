@@ -31,6 +31,7 @@ def main():
         process = st.button("Process")
         
     vectorestore = None
+    results_with_scores = []
     
     if process:
         if not openai_api_key:
