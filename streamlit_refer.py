@@ -78,11 +78,17 @@ def main():
                 response = result['answer']
                 source_documents = result['source_documents']
 
+                query = query  # 사용자가 입력한 질문
+                results_with_scores = vetorestore.similarity_search_with_relevance_scores(query, k=3)  # 유사도 검색
+                for result in results_with_scores:
+                    result.document.metadata['similarity'] = result.score  # 유사도 점수 저장
+
                 st.markdown(response)
                 with st.expander("참고 문서 확인"):
-                    st.markdown(source_documents[0].metadata['source'], help = source_documents[0].page_content)
-                    st.markdown(source_documents[1].metadata['source'], help = source_documents[1].page_content)
-                    st.markdown(source_documents[2].metadata['source'], help = source_documents[2].page_content)
+                    for i, result in enumerate(results_with_scores):
+                        st.markdown(f"Document {i+1}: {result.document.metadata['source']}")
+                        st.markdown(f"Similarity Score: {result.score}")
+                        st.markdown(result.document.page_content)
                     
 
 
