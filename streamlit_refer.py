@@ -24,7 +24,7 @@ def main():
     page_title="LLMChat",
     page_icon=":random:")
 
-    st.title("_Private Data :red[QA Chat]_ ::")
+    st.title("_ :red[LangBot]_ ")
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
@@ -119,7 +119,7 @@ def get_text(docs):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=900,
+        chunk_size=500,
         chunk_overlap=100,
         length_function=tiktoken_len
     )
