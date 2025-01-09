@@ -123,12 +123,12 @@ def get_vectorstore(text_chunks):
     return vectordb
 
 # FAISS 유사도 점수 계산
-def similarity_search_with_relevance_scores(vectorstore, query, k=3):
+def similarity_search_with_relevance_scores(vectorestore, query, k=3):
     # 쿼리 벡터 추출
-    query_embedding = vectorstore.embedding_function(query)
+    query_embedding = vectorestore.embedding_function(query)
 
     # FAISS에서 가장 가까운 벡터 검색
-    distances, indices = vectorstore.index.search(query_embedding.reshape(1, -1), k)
+    distances, indices = vectorestore.index.search(query_embedding.reshape(1, -1), k)
     
     # 코사인 유사도 계산 (거리 -> 유사도로 변환)
     scores = 1 / (1 + distances)  # 거리가 작을수록 유사도가 높음
@@ -136,7 +136,7 @@ def similarity_search_with_relevance_scores(vectorstore, query, k=3):
     # 문서와 점수 묶음 반환
     results_with_scores = []
     for i in range(k):
-        doc = vectorstore.get_documents()[indices[0][i]]  # 검색된 문서 추출
+        doc = vectorestore.get_documents()[indices[0][i]]  # 검색된 문서 추출
         results_with_scores.append({"document": doc, "score": scores[0][i]})
     
     return results_with_scores
