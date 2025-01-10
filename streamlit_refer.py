@@ -35,9 +35,7 @@ def main():
         files_text = get_text(uploaded_files)
         text_chunks = get_text_chunks(files_text)
         vetorestore = get_vectorstore(text_chunks)
-        query = st.chat_input()
-        similarity_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
-     
+        
         st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key) 
 
         st.session_state.processComplete = True
@@ -69,7 +67,7 @@ def main():
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
                 source_documents = result['source_documents']
-                similarity_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
+              
             
 
                 st.markdown(response)
@@ -78,7 +76,7 @@ def main():
 
             # 참고 문서 및 유사도 출력
                 with st.expander("참고 문서 확인"):
-                    st.markdown(source_documents[0].metadata['source'], similarity_score[0], help = source_documents[0].page_content)
+                    st.markdown(source_documents[0].metadata['source'], help = source_documents[0].page_content)
                     st.markdown(source_documents[1].metadata['source'], help = source_documents[1].page_content)
                     st.markdown(source_documents[2].metadata['source'], help = source_documents[2].page_content)
 
