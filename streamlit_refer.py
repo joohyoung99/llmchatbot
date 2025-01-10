@@ -75,10 +75,9 @@ def main():
 
             # 참고 문서 및 유사도 출력
                 with st.expander("참고 문서 확인"):
-                    st.markdown(f"**문서 출처:** {source_documents[0].metadata['source']} ,  help = source_documents[0].page_content)
-                    st.markdown(f"**문서 출처:** {source_documents[1].metadata['source']} ,  help = source_documents[1].page_content)
-                    st.markdown(f"**문서 출처:** {source_documents[2].metadata['source']} ,  help = source_documents[2].page_content)
-       
+                    st.markdown(source_documents[0].metadata['source'], help = source_documents[0].page_content)
+                    st.markdown(source_documents[1].metadata['source'], help = source_documents[1].page_content)
+                    st.markdown(source_documents[2].metadata['source'], help = source_documents[2].page_content)
 
 
 
