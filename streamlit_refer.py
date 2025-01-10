@@ -62,10 +62,12 @@ def main():
 
         with st.spinner("Thinking..."):
             result = chain({"question": query})
+            results_with_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
             with get_openai_callback() as cb:
                 st.session_state.chat_history = result['chat_history']
             response = result['answer']
             source_documents = result['source_documents']
+            
 
             st.markdown(response)
 
@@ -73,9 +75,9 @@ def main():
 
             # 참고 문서 및 유사도 출력
             with st.expander("참고 문서 확인"):
-                st.markdown(f"**문서 출처:** {source_documents[0].metadata['source']}  **유사도 점수:** {source_documents[0].metadata['similarity_score']:.4f}",  help = source_documents[0].page_content)
-                st.markdown(f"**문서 출처:** {source_documents[1].metadata['source']}  **유사도 점수:** {source_documents[1].metadata['similarity_score']:.4f}",  help = source_documents[1].page_content)
-                st.markdown(f"**문서 출처:** {source_documents[2].metadata['source']}  **유사도 점수:** {source_documents[2].metadata['similarity_score']:.4f}",  help = source_documents[2].page_content)
+                st.markdown(f"**문서 출처:** {source_documents[0].metadata['source']}  **유사도 점수:** {results_with_scores[0]:.4f}",  help = source_documents[0].page_content)
+                st.markdown(f"**문서 출처:** {source_documents[1].metadata['source']}  **유사도 점수:** {results_with_scores[1]:.4f}",  help = source_documents[1].page_content)
+                st.markdown(f"**문서 출처:** {source_documents[2].metadata['source']}  **유사도 점수:** {results_with_scores[2]:.4f}",  help = source_documents[2].page_content)
        
 
 
@@ -136,13 +138,6 @@ def get_conversation_chain(vetorestore,openai_api_key):
 
     retriever = vetorestore.as_retriever(search_type='mmr', verbose=True)
     
-    # 검색 함수 오버라이드
-    def similarity_search_with_scores(query):
-        results = vetorestore.similarity_search_with_score(query)
-        documents, scores = zip(*results)
-        for doc, score in results:
-            doc.metadata['similarity_score'] = score  # 점수를 메타데이터로 추가
-        return documents
 
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
@@ -154,7 +149,6 @@ def get_conversation_chain(vetorestore,openai_api_key):
             verbose = True
         )
 
-    conversation_chain.retriever.similarity_search = similarity_search_with_scores
     return conversation_chain
 
 
