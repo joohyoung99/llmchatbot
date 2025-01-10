@@ -69,7 +69,7 @@ def main():
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
                 source_documents = result['source_documents']
-                
+                similarity_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
             
 
                 st.markdown(response)
