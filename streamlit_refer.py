@@ -36,7 +36,7 @@ def main():
         text_chunks = get_text_chunks(files_text)
         vetorestore = get_vectorstore(text_chunks)
         query = st.chat_input()
-        similarity_score = vetorestore.similarity_search_with_score(query)
+        similarity_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
      
         st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key) 
 
@@ -69,6 +69,7 @@ def main():
                     st.session_state.chat_history = result['chat_history']
                 response = result['answer']
                 source_documents = result['source_documents']
+                
             
 
                 st.markdown(response)
