@@ -60,28 +60,28 @@ def main():
         with st.chat_message("assistant"):
             chain = st.session_state.conversation
 
-        with st.spinner("Thinking..."):
-            result = chain({"question": query})
-            results_with_scores = [score for _, score in vetorestore.similarity_search_with_score(query)]
-            with get_openai_callback() as cb:
-                st.session_state.chat_history = result['chat_history']
-            response = result['answer']
-            source_documents = result['source_documents']
+            with st.spinner("Thinking..."):
+                result = chain({"question": query})
+            
+                with get_openai_callback() as cb:
+                    st.session_state.chat_history = result['chat_history']
+                response = result['answer']
+                source_documents = result['source_documents']
             
 
-            st.markdown(response)
+                st.markdown(response)
 
            
 
             # 참고 문서 및 유사도 출력
-            with st.expander("참고 문서 확인"):
-                st.markdown(f"**문서 출처:** {source_documents[0].metadata['source']}  **유사도 점수:** {results_with_scores[0]:.4f}",  help = source_documents[0].page_content)
-                st.markdown(f"**문서 출처:** {source_documents[1].metadata['source']}  **유사도 점수:** {results_with_scores[1]:.4f}",  help = source_documents[1].page_content)
-                st.markdown(f"**문서 출처:** {source_documents[2].metadata['source']}  **유사도 점수:** {results_with_scores[2]:.4f}",  help = source_documents[2].page_content)
+                with st.expander("참고 문서 확인"):
+                    st.markdown(f"**문서 출처:** {source_documents[0].metadata['source']} ,  help = source_documents[0].page_content)
+                    st.markdown(f"**문서 출처:** {source_documents[1].metadata['source']} ,  help = source_documents[1].page_content)
+                    st.markdown(f"**문서 출처:** {source_documents[2].metadata['source']} ,  help = source_documents[2].page_content)
        
 
 
-# Add assistant message to chat history
+
         st.session_state.messages.append({"role": "assistant", "content": response})
 
 def tiktoken_len(text):
