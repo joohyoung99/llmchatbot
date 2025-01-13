@@ -114,7 +114,7 @@ def get_text(docs):
 
 def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=900,
+        chunk_size=500,
         chunk_overlap=100,
         length_function=tiktoken_len
     )
@@ -134,7 +134,7 @@ def get_vectorstore(text_chunks):
 
 
 def get_conversation_chain(vetorestore,openai_api_key):
-    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
+    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-4 mini',temperature=0)
 
     retriever = vetorestore.as_retriever(search_type='mmr', verbose=True)
     
