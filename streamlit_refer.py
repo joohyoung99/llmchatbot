@@ -134,7 +134,7 @@ def get_vectorstore(text_chunks):
 
 
 def get_conversation_chain(vetorestore,openai_api_key):
-    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-4 mini',temperature=0)
+    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
 
     retriever = vetorestore.as_retriever(search_type='mmr', verbose=True)
     
