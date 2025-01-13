@@ -124,7 +124,7 @@ def get_text_chunks(text):
 
 def get_vectorstore(text_chunks):
     embeddings = HuggingFaceEmbeddings(
-                                        model_name="jhgan/ko-sroberta-multitask",
+                                        model_name="nlpai-lab/KoE5",
                                         model_kwargs={'device': 'cpu'},
                                         encode_kwargs={'normalize_embeddings': True}
                                         )  
