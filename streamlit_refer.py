@@ -12,8 +12,8 @@ from langchain.callbacks import get_openai_callback
 from langchain.memory import StreamlitChatMessageHistory
 
 def main():
-    st.set_page_config(page_title="LLMChat :flag-ml: :mag_right:", page_icon=":speech_balloon:")
-    st.title("RAG 기반 LangChain ChatBot")
+    st.set_page_config(page_title="LLMChat", page_icon=":speech_balloon:")
+    st.title("RAG 기반 LangChain ChatBot:flag-ml: :mag_right:")
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
 
