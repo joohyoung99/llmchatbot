@@ -1,7 +1,6 @@
 import streamlit as st
 import tiktoken
 from loguru import logger
-from sklearn.metrics.pairwise import cosine_similarity
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, UnstructuredPowerPointLoader
@@ -13,7 +12,7 @@ from langchain.callbacks import get_openai_callback
 from langchain.memory import StreamlitChatMessageHistory
 
 def main():
-    st.set_page_config(page_title="LLMChat", page_icon=":random:")
+    st.set_page_config(page_title="LLMChat :flag-ml: :mag_right:", page_icon=":speech_balloon:")
     st.title("RAG 기반 LangChain ChatBot")
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
